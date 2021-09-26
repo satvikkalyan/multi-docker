@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t kivtas/react-test -f ./client/Dokerfile.dev ./client
+
+script:
+  - docker run -e CI=true kivtas/react-test npm test
+
+after_success:
+  - docker build -t kivtas/multi-client ./client
+  - docker build -t kivtas/multi-nginx ./nginx
+  - docker build -t kivtas/multi-server ./server
+  - docker build -t kivtas/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push kivtas/multi-client
+  - docker push kivtas/multi-nginx
+  - docker push kivtas/multi-server
+  - docker push kivtas/multi-worker 
